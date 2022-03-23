@@ -1,3 +1,7 @@
+.vscode/
+
+# Ignore file from github for Python, 2022-03-23:
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
