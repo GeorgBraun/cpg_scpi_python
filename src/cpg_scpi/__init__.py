@@ -3,17 +3,22 @@
 Educational client library to use Adafruit Circuit Playground via SCPI protocol in Python3.
 """
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 __author__ = 'Georg Braun'
 
-import serial # Docu at https://pythonhosted.org/pyserial/
+import serial    # Docu at https://pythonhosted.org/pyserial/
 import serial.tools.list_ports
 import sys
 import time
 import inspect as _inspect
 from typing import Tuple
 
+def selfTest(timestamps: bool = False) -> None:
+    cpg = CircuitPlayground()
+    cpg.selfTest(timestamps)
+
 class CircuitPlayground:
+    '''Class to communicate with an Adafruit Circuit Playground via a serial com port and the SCPI protocol'''
 
     def __init__(self, comport = 'auto', baudrate = 115200) -> None:
         '''Create a CircuitPlayground object and connect to CircuitPlayground via serial com port.'''
@@ -32,12 +37,13 @@ class CircuitPlayground:
     def close(self) -> None:
         '''Close com port connection.'''
         if self.is_open:
+            print(f'Closing {self.comPortObj.name}')
             self.comPortObj.close()
     
     @property
     def is_open(self) -> bool:
         '''Return True or False depending on if serial com port is connected.'''
-        return self.comPortObj.is_open
+        return (self.comPortObj is not None) and (self.comPortObj.is_open)
 
     def idn(self) -> str:
         '''Identify connected CircuitPlayground.'''
@@ -225,8 +231,82 @@ class CircuitPlayground:
 
     # Self test:
 
+    def _printSelfTestDeliLine(self) -> None:
+        print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    
+    def _printSelfTestHeadingWithDeliLine(self, heading) -> None:
+        self._printSelfTestDeliLine()
+        print(heading)
+
+    def selfTest(self, timestamps: bool = False) -> None:
+        if timestamps:
+            self._printSelfTestHeadingWithDeliLine(f'cpg_scpi v{__version__}\nRUNNING SOME SELF-TESTS WITH THE CPG with timestamps ...\n')
+        else:
+            self._printSelfTestHeadingWithDeliLine(f'cpg_scpi v{__version__}\nRUNNING SOME SELF-TESTS WITH THE CPG without timestamps ...\n')
+        
+        self.test_led()
+        self.test_buttonAny(timestamps)
+        self.test_temp(timestamps)
+        self.test_acc(timestamps)
+
+        self._printSelfTestHeadingWithDeliLine('DONE WITH SELF-TESTS')
+        self._printSelfTestDeliLine()
+
+    def test_buttonAny(self, timestamps) -> None:
+        if timestamps:
+            outHeading = '| count |    timestamp | any button |'
+            outFormat =  '| {:5} | {:12.3f} | {!s:10} |'
+        else:
+            outHeading = '| count | any button |'
+            outFormat =  '| {:5} | {!s:10} |'
+
+        self._printSelfTestHeadingWithDeliLine('Button-Self-Test: Press left or right button...')
+        print(outHeading)
+        self.wait(2)
+        count = 20
+        for i in range(count):
+            result = (count-i, *self.buttonAny_wts()) if timestamps else (count-i, self.buttonAny())
+            print(outFormat.format(*result))
+            self.wait(0.5)
+
+    def test_temp(self, timestamps) -> None:
+        if timestamps:
+            outHeading = '| count |    timestamp | temp °C |'
+            outFormat =  '| {:5} | {:12.3f} | {:7.2f} |'
+        else:
+            outHeading = '| count | temp °C |'
+            outFormat =  '| {:5} | {:7.2f} |'
+
+        self._printSelfTestHeadingWithDeliLine('Temp-Sensor-Self-Test ...')
+        print(outHeading)
+        self.wait(2)
+        count = 20
+        for i in range(count):
+            result = (count-i, *self.temp_wts()) if timestamps else (count-i, self.temp())
+            print(outFormat.format(*result))
+            self.wait(0.5)
+
+    def test_acc(self, timestamps) -> None:
+        if timestamps:
+            outHeading = '| count |    timestamp | x m/s^2 | y m/s^2 | z m/s^2 |'
+            outFormat =  '| {:5} | {:12.3f} | {:7.2f} | {:7.2f} | {:7.2f} |'
+            testFunction = self.acc_wts
+        else:
+            outHeading = '| count | x m/s^2 | y m/s^2 | z m/s^2 |'
+            outFormat =  '| {:5} | {:7.2f} | {:7.2f} | {:7.2f} |'
+            testFunction = self.acc
+
+        self._printSelfTestHeadingWithDeliLine('Accelerometer-Self-Test ...')
+        print(outHeading)
+        self.wait(2)
+        count = 60
+        for i in range(count):
+            print(outFormat.format(count-i, *testFunction()))
+            self.wait(0.2)
+
     def test_led(self) -> None:
         '''Flash LEDs and run a short chasing light.'''
+        self._printSelfTestHeadingWithDeliLine('LED-Self-Test: Flash LEDs and run a short chasing light.')
         self.test_ledDemo()
         value=1
         for i in range(10):
