@@ -6,7 +6,7 @@ The Circuit Playground (CPG) needs to be connected via a USB data cable (a charg
 and needs to run the SCPI firmware from https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground
 """
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Georg Braun'
 
 import serial    # Docu at https://pythonhosted.org/pyserial/
@@ -388,7 +388,14 @@ class CircuitPlayground:
     
     def _findComPort(self) -> None:
         '''Searches COM ports for Adafruit Circuit Playground. Takes the first hit. Aborts the main program if none is found.'''
-        x=list(serial.tools.list_ports.grep("adafruit"))
+        x=list(serial.tools.list_ports.grep("adafruit")) # should work on Windows
+        # Try also other names if nothing found
+        if len(x)==0:
+            x=list(serial.tools.list_ports.grep("playground")) # should work on Linux
+        if len(x)==0:
+            x=list(serial.tools.list_ports.grep("circuit")) # should also work on Linux
+
+        # Now we hopefully have at least one hit.
         if len(x)==0:
             print('=====================================================')
             print('ERROR in cpg_scpi: Could not find any serial port for')
