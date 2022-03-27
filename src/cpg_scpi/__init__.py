@@ -1,9 +1,12 @@
 """CPG SCPI
 
-Educational client library to use Adafruit Circuit Playground via SCPI protocol in Python3.
+Educational client library to use Adafruit Circuit Playground (CPG) via SCPI protocol in Python3.
+
+The Circuit Playground (CPG) needs to be connected via a USB data cable (a charging cable is not sufficient)
+and needs to run the SCPI firmware from https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground
 """
 
-__version__ = '0.0.5'
+__version__ = '0.1.0'
 __author__ = 'Georg Braun'
 
 import serial    # Docu at https://pythonhosted.org/pyserial/
@@ -49,6 +52,19 @@ class CircuitPlayground:
         '''Query configuration parameters of CircuitPlayground.'''
         return self._query('SYST:CON?', 9)
 
+    # Overview of available SCPI commands on the CPG.
+    # Query commands to have a trailing ? and provide a response,
+    # settings commands to not have a trailing ?. They usually do not provide a response,
+    # except in case of errors.
+    #
+    # *IDN?
+    # *RST
+    # SYST:CON?
+    #
+    # OUT:LED:RED <1/0>
+    # OUT:LED <VALUE>
+    # OUT:DEMO:LED
+    #
     # MEAS:BUTTON?
     # MEAS:BUTTON:RIGHT?
     # MEAS:BUTTON:LEFT?
@@ -60,7 +76,18 @@ class CircuitPlayground:
     # MEAS:CAP:SENSE? // Individual values from 8 cap sensors
     # MEAS:CAP:TAP?   // Single int value with one bit per cap sensor
     #                 // 0-1-threshold is defined via SYST:CON:LED:CAPLIM
-    # MEAS:TIME?
+    # MEAS:TIME?      // CPG uptime in ms since power-on
+    #
+    # Currently not used: Setting commands to change the CPG configuration:
+    # SYST:CON:TIMESTAMP <OFF/MS>
+    # SYST:CON:MEAS:TINT <VALUE>
+    # SYST:CON:MEAS:COUNT <-1..VALUE>
+    # SYST:CON:MEAS:TYPE <SI/RAW>
+    # SYST:CON:MEAS:CAPLIM <VALUE>
+    # SYST:CON:LED:COL <VALUE>
+    #
+    # MEAS:STOP
+
 
     # Left or right button:
 
@@ -157,7 +184,7 @@ class CircuitPlayground:
     # Light sensor:
 
     def light(self) -> int:
-        '''Measure light intensity and return it as a single int value between 0 and 1023 with 680 corresponding to approx. 1000 lux.'''
+        '''Measure light intensity and return it as a single int value between 0 and 1023 with 680 corresponding to approx. 1000 lx (lux).'''
         # SI response from CPG:
         # '16105 197' 
         return self._parseIntAfterTimestamp1( self._query('MEAS:LIGHT?', 1) )
@@ -214,9 +241,11 @@ class CircuitPlayground:
     # LEDs:
 
     def led(self, value) -> None:
+        '''Control the 10 neopixel LEDs with a value between 0 (all off) and 1023 (all on).'''
         return self._query(f'OUT:LED {int(value)}', 0)
 
     def ledDemo(self) -> None:
+        '''Briefly flash all 10 neopixel LEDs with different colors.'''
         return self._query('OUT:DEMO:LED', 0)
 
     # Timing:
