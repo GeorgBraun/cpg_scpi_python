@@ -1,4 +1,3 @@
-from . import selfTest
+from .test import funcTest
 
-selfTest()
-
+funcTest()

@@ -3,7 +3,7 @@
 Educational client library to use Adafruit Circuit Playground via SCPI protocol in Python3.
 """
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __author__ = 'Georg Braun'
 
 import serial    # Docu at https://pythonhosted.org/pyserial/
@@ -12,10 +12,6 @@ import sys
 import time
 import inspect as _inspect
 from typing import Tuple
-
-def selfTest(timestamps: bool = False) -> None:
-    cpg = CircuitPlayground()
-    cpg.selfTest(timestamps)
 
 class CircuitPlayground:
     '''Class to communicate with an Adafruit Circuit Playground via a serial com port and the SCPI protocol'''
@@ -228,194 +224,6 @@ class CircuitPlayground:
     def wait(self, seconds: float = 0):
         '''Waits for seconds, e.g. 0.1 for 100 milli-seconds'''
         time.sleep(seconds)
-
-    # Self test:
-
-    def _printSelfTestDeliLine(self) -> None:
-        print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-    
-    def _printSelfTestHeadingWithDeliLine(self, heading) -> None:
-        self._printSelfTestDeliLine()
-        print(heading)
-
-    def selfTest(self, timestamps: bool = False) -> None:
-        if timestamps:
-            self._printSelfTestHeadingWithDeliLine(f'cpg_scpi v{__version__}\nRUNNING SOME SELF-TESTS WITH THE CPG with timestamps ...\n')
-        else:
-            self._printSelfTestHeadingWithDeliLine(f'cpg_scpi v{__version__}\nRUNNING SOME SELF-TESTS WITH THE CPG without timestamps ...\n')
-        
-        self.test_led()
-        self.test_buttonAny(timestamps)
-        self.test_switch(timestamps)
-        self.test_temp(timestamps)
-        self.test_light(timestamps)
-        self.test_acc(timestamps)
-        self.test_touch(timestamps)
-
-        self._printSelfTestHeadingWithDeliLine('DONE WITH SELF-TESTS')
-        self._printSelfTestDeliLine()
-
-    def test_buttonAny(self, timestamps) -> None:
-        if timestamps:
-            outHeading = '| count |    timestamp | any button |'
-            outFormat =  '| {:5} | {:12.3f} | {!s:10} |'
-        else:
-            outHeading = '| count | any button |'
-            outFormat =  '| {:5} | {!s:10} |'
-
-        self._printSelfTestHeadingWithDeliLine('Button-Self-Test: Press left or right button...')
-        print(outHeading)
-        self.wait(2)
-        count = 20
-        for i in range(count):
-            result = (count-i, *self.buttonAny_wts()) if timestamps else (count-i, self.buttonAny())
-            print(outFormat.format(*result))
-            self.wait(0.5)
-
-    def test_switch(self, timestamps) -> None:
-        if timestamps:
-            outHeading = '| count |    timestamp | switch |'
-            outFormat =  '| {:5} | {:12.3f} | {!s:6} |'
-        else:
-            outHeading = '| count | switch |'
-            outFormat =  '| {:5} | {!s:6} |'
-
-        self._printSelfTestHeadingWithDeliLine('Switch-Self-Test: Change slider switch position...')
-        print(outHeading)
-        self.wait(2)
-        count = 20
-        for i in range(count):
-            result = (count-i, *self.switch_wts()) if timestamps else (count-i, self.switch())
-            print(outFormat.format(*result))
-            self.wait(0.5)
-
-    def test_temp(self, timestamps) -> None:
-        if timestamps:
-            outHeading = '| count |    timestamp | temp °C |'
-            outFormat =  '| {:5} | {:12.3f} | {:7.2f} |'
-        else:
-            outHeading = '| count | temp °C |'
-            outFormat =  '| {:5} | {:7.2f} |'
-
-        self._printSelfTestHeadingWithDeliLine('Temp-Sensor-Self-Test ...')
-        print(outHeading)
-        self.wait(2)
-        count = 20
-        for i in range(count):
-            result = (count-i, *self.temp_wts()) if timestamps else (count-i, self.temp())
-            print(outFormat.format(*result))
-            self.wait(0.5)
-
-    def test_light(self, timestamps) -> None:
-        if timestamps:
-            outHeading = '| count |    timestamp | light |'
-            outFormat =  '| {:5} | {:12.3f} | {:5} |'
-        else:
-            outHeading = '| count | light |'
-            outFormat =  '| {:5} | {:5} |'
-
-        self._printSelfTestHeadingWithDeliLine('Light-Sensor-Self-Test: Move hand over light sensor...')
-        print(outHeading)
-        self.wait(2)
-        count = 20
-        for i in range(count):
-            result = (count-i, *self.light_wts()) if timestamps else (count-i, self.light())
-            print(outFormat.format(*result))
-            self.wait(0.5)
-
-    def test_acc(self, timestamps) -> None:
-        if timestamps:
-            outHeading = '| count |    timestamp | x m/s^2 | y m/s^2 | z m/s^2 |'
-            outFormat =  '| {:5} | {:12.3f} | {:7.2f} | {:7.2f} | {:7.2f} |'
-            testFunction = self.acc_wts
-        else:
-            outHeading = '| count | x m/s^2 | y m/s^2 | z m/s^2 |'
-            outFormat =  '| {:5} | {:7.2f} | {:7.2f} | {:7.2f} |'
-            testFunction = self.acc
-
-        self._printSelfTestHeadingWithDeliLine('Accelerometer-Self-Test: Tilt the CPG board...')
-        print(outHeading)
-        self.wait(2)
-        count = 60
-        for i in range(count):
-            print(outFormat.format(count-i, *testFunction()))
-            self.wait(0.2)
-
-    def test_touch(self, timestamps) -> None:
-        if timestamps:
-            outHeading = '| count |    timestamp | touch |   binary |'
-            outFormat =  '| {0:5} | {1:12.3f} | {2:5} | {2:08b} |'
-        else:
-            outHeading = '| count | touch |   binary |'
-            outFormat =  '| {0:5} | {1:5} | {1:08b} |'
-
-        self._printSelfTestHeadingWithDeliLine('Touch-Sensor-Self-Test: Touch capacitive sensor pads...')
-        print(outHeading)
-        self.wait(2)
-        count = 30
-        for i in range(count):
-            result = (count-i, *self.touch_wts()) if timestamps else (count-i, self.touch())
-            print(outFormat.format(*result))
-            self.wait(0.5)
-
-    def test_led(self) -> None:
-        '''Flash LEDs and run a short chasing light.'''
-        self._printSelfTestHeadingWithDeliLine('LED-Self-Test: Flash LEDs and run a short chasing light...')
-        print('|  flashing LEDs... |')
-        self.test_ledDemo()
-        value=1
-        print('|  val |       LEDs |')
-        for i in range(10):
-            print(f'| {value:4} | {value:010b} |')
-            self.led(value)
-            self.wait(0.2)
-            value <<= 1 # shift 1 bit to the left
-        for i in range(10):
-            value >>= 1 # shift 1 bit to the right
-            print(f'| {value:4} | {value:010b} |')
-            self.led(value)
-            self.wait(0.2)
-        print('|  flashing LEDs... |')
-        self.test_ledDemo()
-
-    def test_ledDemo(self) -> None:
-        '''Flash LEDs three times.'''
-        for i in range(3):
-            self.ledDemo()
-            self.wait(0.2)
-
-    def testAccSpeed(self, iterations: int = 100) -> None:
-        '''Measure how long it takes to do an accelerometer measurement.'''
-        print(f'Testing acc measurement speed with {iterations} iterations. Please wait ...')
-        import timeit
-        result = timeit.Timer(stmt=lambda: self.acc(), setup='pass').timeit(number=iterations)
-        print(f'Total time: {result:.1f} seconds.')
-        print(f'On average {(result*1000/iterations):.1f} ms per measurement.')
-
-    def testLightSpeed(self, iterations: int = 100) -> None:
-        '''Measure how long it takes to do a light sensor measurement.'''
-        print(f'Testing light measurement speed with {iterations} iterations. Please wait ...')
-        import timeit
-        result = timeit.Timer(stmt=lambda: self.light(), setup='pass').timeit(number=iterations)
-        print(f'Total time: {result:.1f} seconds.')
-        print(f'On average {(result*1000/iterations):.1f} ms per measurement.')
-
-    def _testResponseWaitTime(self, iterations: int = 10000) -> None:
-        '''Test it the wait time for additional, unexpected responses is long enough.'''
-        print(f'Testing Response-Wait-Time with {iterations} iterations ...')
-        for i in range(iterations):
-            if i%100==0: print('try-count', i)
-            try:
-                # Request acc measurement values, but do not expect any response, even if the CPG will send one.
-                self._query('MEAS:ACC?', 0)
-                # If we are still here, we did not get a response. This is bad.
-                print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                print('ERROR in testResponseWaitTime(): CPG-Response was too late.')
-                print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-            except Exception:
-                # The normal behavior is a response, resulting in an exception.
-                # This is what we expected. Therefore, just continue.
-                pass
 
     def _query(self, cmd: str, expectedLines: int):
         '''Send command or query to CPG and receive response, if any. Also do some error detection.'''
