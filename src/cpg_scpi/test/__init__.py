@@ -12,9 +12,9 @@ def funcTest(timestamps: bool = False) -> None:
     else:
         _printFuncTestHeadingWithDeliLine(f'cpg_scpi v{CircuitPlaygroundVersion}\nRUNNING SOME FUNCTIONAL-TESTS WITH THE CPG without timestamps ...\n')
     
-    test_led(cpg)
-    test_buttonAny(cpg, timestamps)
-    test_switch(cpg, timestamps)
+    # test_led(cpg)
+    # test_buttonAny(cpg, timestamps)
+    # test_switch(cpg, timestamps)
     test_temp(cpg, timestamps)
     test_light(cpg, timestamps)
     test_acc(cpg, timestamps)
@@ -142,21 +142,21 @@ def test_touch(cpg, timestamps) -> None:
 def test_led(cpg) -> None:
     '''Flash LEDs and run a short chasing light.'''
     _printFuncTestHeadingWithDeliLine('LED-Test: Flash LEDs and run a short chasing light...')
-    print('|  flashing LEDs... |')
+    print('flashing LEDs...')
     test_ledDemo(cpg)
     value=1
-    print('|  val |       LEDs |')
+    # print('|  val |       LEDs |')
     for i in range(10):
-        print(f'| {value:4} | {value:010b} |')
+        # print(f'| {value:4} | {value:010b} |')
         cpg.led(value)
         cpg.wait(0.2)
         value <<= 1 # shift 1 bit to the left
     for i in range(10):
         value >>= 1 # shift 1 bit to the right
-        print(f'| {value:4} | {value:010b} |')
+        # print(f'| {value:4} | {value:010b} |')
         cpg.led(value)
         cpg.wait(0.2)
-    print('|  flashing LEDs... |')
+    print('flashing LEDs...')
     test_ledDemo(cpg)
 
 def test_ledDemo(cpg) -> None:
