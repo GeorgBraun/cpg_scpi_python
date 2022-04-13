@@ -397,12 +397,14 @@ class CircuitPlayground:
     
     def _findComPort(self) -> None:
         '''Searches COM ports for Adafruit Circuit Playground. Takes the first hit. Aborts the main program if none is found.'''
-        x=list(serial.tools.list_ports.grep("adafruit")) # should work on Windows
+        x=list(serial.tools.list_ports.grep("adafruit")) # should work on Windows with Adafruit COM-Port driver
         # Try also other names if nothing found
         if len(x)==0:
             x=list(serial.tools.list_ports.grep("playground")) # should work on Linux
         if len(x)==0:
             x=list(serial.tools.list_ports.grep("circuit")) # should also work on Linux
+        if len(x)==0:
+            x=list(serial.tools.list_ports.grep("239A:8011")) # should generally work because of VID:PID=239A:8011
 
         # Now we hopefully have at least one hit.
         if len(x)==0:
