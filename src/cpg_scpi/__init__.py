@@ -245,14 +245,14 @@ class CircuitPlayground:
     def led(self, value) -> None:
         '''Control the 10 neopixel LEDs with a value between 0 (all off) and 1023 (all on).'''
         print(f'LEDs {value:010b}')
-        return self._query(f'OUT:LED {int(value)}', 0)
+        self._query(f'OUT:LED {int(value)}', 0)
 
     def ledDemo(self) -> None:
         '''Briefly flash all 10 neopixel LEDs with different colors.'''
         # print(f'LEDs {0:010b}')
         print(f'LEDs {1023:010b}')
         print(f'LEDs {0:010b}')
-        return self._query('OUT:DEMO:LED', 0)
+        self._query('OUT:DEMO:LED', 0)
 
     # Timing:
 
