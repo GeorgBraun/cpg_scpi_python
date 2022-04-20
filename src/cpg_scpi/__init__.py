@@ -6,7 +6,7 @@ The Circuit Playground (CPG) needs to be connected via a USB data cable (a charg
 and needs to run the SCPI firmware from https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground
 """
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __author__ = 'Georg Braun'
 
 import serial    # Docu at https://pythonhosted.org/pyserial/
@@ -397,13 +397,19 @@ class CircuitPlayground:
     
     def _findComPort(self) -> None:
         '''Searches COM ports for Adafruit Circuit Playground. Takes the first hit. Aborts the main program if none is found.'''
+        print( '=============================================================')
+        print(f'cpg_scpi v{__version__}')
+        print( 'Searching for serial device with "adafruit" ...')
         x=list(serial.tools.list_ports.grep("adafruit")) # should work on Windows with Adafruit COM-Port driver
         # Try also other names if nothing found
         if len(x)==0:
+            print('                            with "playground" ...')
             x=list(serial.tools.list_ports.grep("playground")) # should work on Linux
         if len(x)==0:
+            print('                            with "circuit" ...')
             x=list(serial.tools.list_ports.grep("circuit")) # should also work on Linux
         if len(x)==0:
+            print('                            with "239A:8011" as VID:PID ...')
             x=list(serial.tools.list_ports.grep("239A:8011")) # should generally work because of VID:PID=239A:8011
 
         # Now we hopefully have at least one hit.
@@ -411,31 +417,25 @@ class CircuitPlayground:
             # If not, we switch to emulation mode.
             self.comPort = None
             self.emuMode = True
-            print('=======================================================')
-            print(f'cpg_scpi v{__version__}')
-            print('WARNING in cpg_scpi: Could not find any serial port for')
-            print('                     Adafruit Circuit Playground.')
-            print('=======================================================')
+            print( 'WARNING in cpg_scpi: Could not find any serial port for')
+            print( '                     Adafruit Circuit Playground.')
+            print( '=============================================================')
             print()
-            print('=======================================================')
-            print('WILL SWITCH TO EMULATION MODE.')
+            print( '=============================================================')
+            print( 'WILL SWITCH TO EMULATION MODE.')
             self._printCountdown(3)
-            print('=======================================================')
+            print( '=============================================================')
             #sys.exit(1)
         elif len(x)>1:
             self.comPort = x[0].device
             self.emuMode = False
-            print( '=======================================================')
-            print(f'cpg_scpi v{__version__}')
             print(f'WARNING in cpg_scpi: Found {len(x)} Circuit Playgrounds.')
             print(f'                     Will take the one on {self.comPort}.')
-            print( '=======================================================')
+            print( '=============================================================')
         else: # len(x)==1
             self.comPort = x[0].device
             self.emuMode = False
-            print( '=============================================================')
-            print(f'cpg_scpi v{__version__}')
-            print(f'INFO in cpg_scpi: Found Circuit Playgrounds on {self.comPort}')
+            print(f'INFO in cpg_scpi: Found a Circuit Playground on {self.comPort}')
             print( '=============================================================')
 
     def _printCountdown(self, start: int = 3) -> None:
