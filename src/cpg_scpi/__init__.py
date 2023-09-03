@@ -1,12 +1,13 @@
 """CPG SCPI
 
-Educational client library to use Adafruit Circuit Playground (CPG) via SCPI protocol in Python3.
+Educational client library to use Adafruit Circuit Playground (CPG) or BBC micro:bit via SCPI protocol in Python3.
 
-The Circuit Playground (CPG) needs to be connected via a USB data cable (a charging cable is not sufficient)
-and needs to run the SCPI firmware from https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground
+The Circuit Playground (CPG) or BBC micro:bit needs to be connected via a USB data cable (a charging cable is not sufficient).
+The Circuit Playground (CPG) needs to run the SCPI firmware from https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground.
+The BBC micro:bit also needs to run a SCPI firmware. Source-Project is t.b.d.
 """
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 __author__ = 'Georg Braun'
 
 import serial    # Docu at https://pythonhosted.org/pyserial/

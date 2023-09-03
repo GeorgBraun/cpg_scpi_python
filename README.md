@@ -1,11 +1,13 @@
 # cpg_scpi
 
-Educational client library to use Adafruit Circuit Playground via SCPI protocol in Python3.
+Educational client library to use Adafruit Circuit Playground (CPG) or BBC micro:bit via SCPI protocol in Python3.
 
 
 ## Description
 
 The corresponding Arduino Sketch for the Circuit Playground can be found [here](https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground).
+
+The corresponding MicroPython source code for the BBC micro:bit will be published in future.
 
 ... more docu to come ...
 
@@ -42,9 +44,13 @@ python -m build
 
 Upload package to pypi:
 
-Before uploading, delete outdated build artifacts in the `dist` folder, such that only the latest build files are uploaded.
-
 In project root folder:
+
+```
+twine upload --skip-existing dist/*
+```
+
+Alternatively, before uploading, delete outdated build artifacts in the `dist` folder, such that only the latest build files are uploaded:
 
 ```
 twine upload dist/*
