@@ -34,6 +34,8 @@ python3 -m pip install --upgrade twine
 
 Build package:
 
+In project root folder:
+
 ```
 python -m build
 ```
@@ -41,6 +43,8 @@ python -m build
 Upload package to pypi:
 
 Before uploading, delete outdated build artifacts in the `dist` folder, such that only the latest build files are uploaded.
+
+In project root folder:
 
 ```
 twine upload dist/*

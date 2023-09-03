@@ -6,7 +6,7 @@ The Circuit Playground (CPG) needs to be connected via a USB data cable (a charg
 and needs to run the SCPI firmware from https://github.com/GeorgBraun/SCPI-for-Adafruit-Circuit-Playground
 """
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 __author__ = 'Georg Braun'
 
 import serial    # Docu at https://pythonhosted.org/pyserial/
@@ -396,52 +396,67 @@ class CircuitPlayground:
             print(f'Connected to {self.comPortObj.name} with {self.comPortObj.baudrate} baud (bit/second).')
     
     def _findComPort(self) -> None:
-        '''Searches COM ports for Adafruit Circuit Playground. Takes the first hit. Aborts the main program if none is found.'''
-        print( '=============================================================')
+        '''Searches COM ports for Adafruit Circuit Playground or BBC micro:bit. Takes the first hit. Switches to emulation mode if none is found.'''
+        print( '==================================================================')
         print(f'cpg_scpi v{__version__}')
         print( 'Searching for serial device with "adafruit" ...')
-        x=list(serial.tools.list_ports.grep("adafruit")) # should work on Windows with Adafruit COM-Port driver
+        cpgFound=list(serial.tools.list_ports.grep("adafruit")) # should work on Windows with Adafruit COM-Port driver
         # Try also other names if nothing found
-        if len(x)==0:
+        if len(cpgFound)==0:
             print('                            with "playground" ...')
-            x=list(serial.tools.list_ports.grep("playground")) # should work on Linux
-        if len(x)==0:
+            cpgFound=list(serial.tools.list_ports.grep("playground")) # should work on Linux
+        if len(cpgFound)==0:
             print('                            with "circuit" ...')
-            x=list(serial.tools.list_ports.grep("circuit")) # should also work on Linux
-        if len(x)==0:
+            cpgFound=list(serial.tools.list_ports.grep("circuit")) # should also work on Linux
+        if len(cpgFound)==0:
             print('                            with "239A:8011" as VID:PID ...')
-            x=list(serial.tools.list_ports.grep("239A:8011")) # should generally work because of VID:PID=239A:8011
+            cpgFound=list(serial.tools.list_ports.grep("239A:8011")) # should generally work because of VID:PID=239A:8011
+        if len(cpgFound)==0:
+            print('Searching for serial device with "0D28:0204" as VID:PID for BBC micro:bit ...')
+            bbcFound=list(serial.tools.list_ports.grep("0D28:0204")) # should generally work because of VID:PID=0D28:0204
+
 
         # Now we hopefully have at least one hit.
-        if len(x)==0:
+        if len(cpgFound)>1:
+            self.comPort = cpgFound[0].device
+            self.emuMode = False
+            print(f'WARNING in cpg_scpi: Found {len(cpgFound)} Circuit Playgrounds.')
+            print(f'                     Will take the one on {self.comPort}.')
+            print( '==================================================================')
+        elif len(cpgFound)==1:
+            self.comPort = cpgFound[0].device
+            self.emuMode = False
+            print(f'INFO in cpg_scpi: Found a Circuit Playground on {self.comPort}')
+            print( '==================================================================')
+        elif len(bbcFound)>1:
+            self.comPort = bbcFound[0].device
+            self.emuMode = False
+            print(f'WARNING in cpg_scpi: Found {len(bbcFound)} BBC micro:bits.')
+            print(f'                     Will take the one on {self.comPort}.')
+            print( '==================================================================')
+        elif len(bbcFound)==1:
+            self.comPort = bbcFound[0].device
+            self.emuMode = False
+            print(f'INFO in cpg_scpi: Found a BBC micro:bit on {self.comPort}')
+            print( '==================================================================')
+        else: # len(cpgFound)==0 and len(bbcFound)==0
             # If not, we switch to emulation mode.
             self.comPort = None
             self.emuMode = True
             print( 'WARNING in cpg_scpi: Could not find any serial port for')
-            print( '                     Adafruit Circuit Playground.')
-            print( '=============================================================')
+            print( '                     Adafruit Circuit Playground or BBC micro:bit.')
+            print( '==================================================================')
             print()
-            print( '=============================================================')
+            print( '==================================================================')
             print( 'WILL SWITCH TO EMULATION MODE.')
-            self._printCountdown(3)
-            print( '=============================================================')
+            self._printCountdown(start=3, delay=0.5)
+            print( '==================================================================')
             #sys.exit(1)
-        elif len(x)>1:
-            self.comPort = x[0].device
-            self.emuMode = False
-            print(f'WARNING in cpg_scpi: Found {len(x)} Circuit Playgrounds.')
-            print(f'                     Will take the one on {self.comPort}.')
-            print( '=============================================================')
-        else: # len(x)==1
-            self.comPort = x[0].device
-            self.emuMode = False
-            print(f'INFO in cpg_scpi: Found a Circuit Playground on {self.comPort}')
-            print( '=============================================================')
 
-    def _printCountdown(self, start: int = 3) -> None:
+    def _printCountdown(self, start: int = 3, delay: float = 1.0) -> None:
         for i in range(start, 0, -1):
             print(i, end=" ", flush=True)
-            time.sleep(1)
+            time.sleep(delay)
         print('', flush=True)
 
     # Methods for emulation mode
